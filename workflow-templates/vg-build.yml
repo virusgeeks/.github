@@ -36,6 +36,8 @@ jobs:
 
       - name: Installing yarn dependencies
         run: yarn install --frozen-lockfile --prefer-offline
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
 
       - name: Build
         run: yarn build
