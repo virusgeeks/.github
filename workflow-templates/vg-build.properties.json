@@ -1,7 +1,7 @@
 {
     "name": "VG Build Template",
     "description": "VirusGeeks CI workflow template.",
-    "iconName": "logo.png",
+    "iconName": "logo",
     "categories": [
         "JavaScript",
         "TypeScript"
