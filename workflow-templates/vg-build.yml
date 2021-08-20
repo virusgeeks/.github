@@ -34,6 +34,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-vg-build-yarn-
 
+      - uses: actions/setup-node@v2
+        with:
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@virusgeeks'
+          always-auth: true
+
       - name: Installing yarn dependencies
         run: yarn install --frozen-lockfile --prefer-offline
         env:
@@ -122,10 +128,12 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ steps.repository-name.outputs.name }}
           IMAGE_TAG: ${{ needs.create_release_tag.outputs.tag_name }}
+          NODE_AUTH_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
         run: |
           # Build a docker container and
           # push it to ECR so that it can
           # be deployed to ECS.
+          echo //npm.pkg.github.com/:_authToken=$NODE_AUTH_TOKEN >> .npmrc
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
