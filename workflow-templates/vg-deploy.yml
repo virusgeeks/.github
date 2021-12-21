@@ -45,27 +45,13 @@ jobs:
       - name: Installing yarn dependencies
         run: yarn install --frozen-lockfile --prefer-offline
       
-      - name: Get Secrets - NON PROD
-        if: ${{ github.event.inputs.environment != 'production' }} 
+      - name: Get Secrets
         env: 
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           yarn vgpsetupenv -a ${{ github.event.inputs.app_name }}-secrets --secretsOnly -e ${{ github.event.inputs.environment }}
           yarn vgpsetupenv -a ${{ github.event.inputs.app_name }} --publicOnly -e ${{ github.event.inputs.environment }}
-
-      - name: Get Secrets - PROD
-        if: ${{ github.event.inputs.environment == 'production' }} 
-        env: 
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          yarn vgpsetupenv -a ${{ github.event.inputs.app_name }}-secrets --secretsOnly -e ${{ github.event.inputs.environment }} -o .env.secrets.pa --customerEnvironment pa
-          yarn vgpsetupenv -a ${{ github.event.inputs.app_name }}-secrets --secretsOnly -e ${{ github.event.inputs.environment }} -o .env.secrets.sf --customerEnvironment sf
-          yarn vgpsetupenv -a ${{ github.event.inputs.app_name }}-secrets --secretsOnly -e ${{ github.event.inputs.environment }} -o .env.secrets.sm --customerEnvironment sm
-          yarn vgpsetupenv -a ${{ github.event.inputs.app_name }} --publicOnly -e ${{ github.event.inputs.environment }} -o .env.public.pa --customerEnvironment pa
-          yarn vgpsetupenv -a ${{ github.event.inputs.app_name }} --publicOnly -e ${{ github.event.inputs.environment }} -o .env.public.sf --customerEnvironment sf
-          yarn vgpsetupenv -a ${{ github.event.inputs.app_name }} --publicOnly -e ${{ github.event.inputs.environment }} -o .env.public.sm --customerEnvironment sm
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -87,13 +73,5 @@ jobs:
       - name: Apply k8s deployment
         run: kustomize build deploy/${{ github.event.inputs.environment }} --load-restrictor=LoadRestrictionsNone | kubectl apply -f -
 
-      - name: Check deployment status in kubernetes - NOT PROD
-        if: ${{ github.event.inputs.environment != 'production' }} 
+      - name: Check deployment status in kubernetes
         run: kubectl rollout status deployment/deployment-${{ github.event.inputs.app_name }}-${{ github.event.inputs.environment }} -n vgp-${{ github.event.inputs.environment }}
-
-      - name: Check deployment status in kubernetes - PROD
-        if: ${{ github.event.inputs.environment == 'production' }}
-        run: | 
-          kubectl rollout status deployment/deployment-${{ github.event.inputs.app_name }}-${{ github.event.inputs.environment }} -n vgp-production-pa
-          kubectl rollout status deployment/deployment-${{ github.event.inputs.app_name }}-${{ github.event.inputs.environment }} -n vgp-production-sf
-          kubectl rollout status deployment/deployment-${{ github.event.inputs.app_name }}-${{ github.event.inputs.environment }} -n vgp-production-sm
