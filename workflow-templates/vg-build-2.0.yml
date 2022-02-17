@@ -1,0 +1,12 @@
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - $default-branch
+      - "pre-release"
+
+name: VG Build Template 2.0
+jobs:
+  call-vg-build-workflow:
+    uses: virusgeeks/.github/workflows/vg-build-template.yml@main
