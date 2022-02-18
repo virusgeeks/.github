@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     concurrency: ${{ inputs.environment }}-deployment
     environment: ${{ inputs.environment }}
-    if: ${{ inputs.release_tag != "" }}
+    if: inputs.release_tag != ""
 
     steps:
       - name: Get Repository Name
