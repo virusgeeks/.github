@@ -1,0 +1,90 @@
+name: Kubernetes Deployment workflow
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Environment to deploy on"
+        required: true
+        type: string
+      release_tag:
+        description: "The release tag"
+        required: true
+        type: string
+
+jobs:
+  deploy_to_envs:
+    name: Kubernetes deployment to environments
+    runs-on: ubuntu-latest
+    concurrency: ${{ github.event.inputs.environment }}-deployment
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Get Repository Name
+        id: repository-name
+        run: echo "::set-output name=name::${GITHUB_REPOSITORY#*\/}"
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.release_tag }}
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo '::set-output name=dir::$(yarn cache dir)'
+
+      - uses: actions/cache@v2
+        name: validate cache
+        id: yarn-cache
+        with:
+          path: |
+            ~/.cache/Cypress 
+            ${{ steps.yarn-cache-dir-path.outputs.dir }}
+            ${{ github.workspace }}/apps/vgp-app/.next/cache
+            **/node_modules
+            node_modules
+          key: ${{ runner.os }}-vg-build-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-vg-build-yarn-
+
+      # Setup .npmrc file to publish to npm
+      - name: Connect to private registry
+        uses: actions/setup-node@v2
+        with:
+          registry-url: "https://npm.pkg.github.com"
+          # Defaults to the user or organization that owns the workflow file
+          scope: "@virusgeeks"
+
+      - name: Installing yarn dependencies
+        run: yarn install --frozen-lockfile --prefer-offline
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
+
+      - name: Get Secrets
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          yarn vgpsetupenv -a ${{ steps.repository-name.outputs.name }}-secrets --secretsOnly -e ${{ github.event.inputs.environment }}
+          yarn vgpsetupenv -a ${{ steps.repository-name.outputs.name }} --publicOnly -e ${{ github.event.inputs.environment }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ARN }}
+          aws-region: us-east-1
+          role-session-name: build-pipeline-user-Session
+          role-duration-seconds: 1200
+
+      - name: Setup Kubeconfig
+        run: aws eks --region us-east-1 update-kubeconfig --name vgp-main
+
+      - name: Update image
+        working-directory: deploy/base
+        run: kustomize edit set image ${{ steps.repository-name.outputs.name }}-image=*:${{ github.event.inputs.release_tag }}
+
+      - name: Apply k8s deployment
+        run: kustomize build deploy/${{ github.event.inputs.environment }} --load-restrictor=LoadRestrictionsNone | kubectl apply -f -
+
+      - name: Check deployment status in kubernetes
+        run: kubectl rollout status deployment/deployment-${{ steps.repository-name.outputs.name }}-${{ github.event.inputs.environment }} -n vgp-${{ github.event.inputs.environment }}

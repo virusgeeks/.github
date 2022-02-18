@@ -14,6 +14,10 @@ on:
         required: true
       DEPLOYMENT_GITHUB_TOKEN:
         required: true
+    outputs:
+      RELEASE_TAG:
+        description: "release tag"
+        value: ${{ jobs.create_release_tag.outputs.tag_name }}
 
 name: VG Build Template
 jobs:
@@ -147,45 +151,3 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-  deploy_to_test:
-    name: Deploy To Test environment
-    runs-on: ubuntu-latest
-    needs: [push_image, create_release_tag]
-    if: github.ref == 'refs/heads/${{ inputs.MAIN_BRANCH_NAME }}'
-
-    steps:
-      - name: Invoke deployment workflow
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: "Kubernetes Deployment workflow"
-          token: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
-          inputs: '{ "app_name": "${{ needs.push_image.outputs.app_name }}", "environment": "test", "release_tag": "${{ needs.create_release_tag.outputs.tag_name }}" }'
-
-  deploy_to_staging:
-    name: Deploy To Staging environment
-    environment: staging
-    runs-on: ubuntu-latest
-    needs: [push_image, create_release_tag]
-
-    steps:
-      - name: Invoke deployment workflow
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: "Kubernetes Deployment workflow"
-          token: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
-          inputs: '{ "app_name": "${{ needs.push_image.outputs.app_name }}", "environment": "staging", "release_tag": "${{ needs.create_release_tag.outputs.tag_name }}" }'
-
-  deploy_to_prod:
-    name: Deploy To Prod environment
-    environment: production
-    runs-on: ubuntu-latest
-    needs: [push_image, create_release_tag, deploy_to_staging]
-
-    steps:
-      - name: Invoke deployment workflow
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: "Kubernetes Deployment workflow"
-          token: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
-          inputs: '{ "app_name": "${{ needs.push_image.outputs.app_name }}", "environment": "production", "release_tag": "${{ needs.create_release_tag.outputs.tag_name }}" }'
