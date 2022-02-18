@@ -1,5 +1,16 @@
 on:
   workflow_call:
+    secrets:
+      VG_NODE_TOKEN:
+        required: true
+      GITHUB_TOKEN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      DEPLOYMENT_GITHUB_TOKEN:
+        required: true
 
 name: VG Build Template
 jobs:
