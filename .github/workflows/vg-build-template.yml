@@ -1,5 +1,10 @@
 on:
   workflow_call:
+    inputs:
+      MAIN_BRANCH_NAME:
+        default: main
+        required: true
+        type: string
     secrets:
       VG_NODE_TOKEN:
         required: true
@@ -82,7 +87,7 @@ jobs:
   create_release_tag:
     name: Create release tag
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/$default-branch' || github.ref == 'refs/heads/pre-release'
+    if: github.ref == 'refs/heads/${{ inputs.MAIN_BRANCH_NAME }}' || github.ref == 'refs/heads/pre-release'
     needs: [build_and_test]
     outputs:
       tag_name: ${{ steps.version-tag.outputs.tag }}
@@ -146,7 +151,7 @@ jobs:
     name: Deploy To Test environment
     runs-on: ubuntu-latest
     needs: [push_image, create_release_tag]
-    if: github.ref == 'refs/heads/$default-branch'
+    if: github.ref == 'refs/heads/${{ inputs.MAIN_BRANCH_NAME }}'
 
     steps:
       - name: Invoke deployment workflow

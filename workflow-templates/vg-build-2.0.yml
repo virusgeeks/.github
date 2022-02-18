@@ -10,6 +10,8 @@ name: VG Build Template 2.0
 jobs:
   vg-build-workflow:
     uses: virusgeeks/.github/.github/workflows/vg-build-template.yml@master
+    with:
+      MAIN_BRANCH_NAME: "$default-branch"
     secrets:
       VG_NODE_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
