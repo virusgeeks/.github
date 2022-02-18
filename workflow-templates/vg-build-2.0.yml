@@ -3,10 +3,15 @@ on:
     types: [opened, synchronize, reopened]
   push:
     branches:
-      - $default-branch
+      - main
       - "pre-release"
 
 name: VG Build Template 2.0
 jobs:
-  call-vg-build-workflow:
-    uses: virusgeeks/.github/workflows/vg-build-template.yml@main
+  vg-build-workflow:
+    uses: virusgeeks/.github/.github/workflows/vg-build-template.yml@master
+    secrets:
+      VG_NODE_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DEPLOYMENT_GITHUB_TOKEN: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
