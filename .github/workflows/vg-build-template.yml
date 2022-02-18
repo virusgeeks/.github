@@ -102,6 +102,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ steps.version-tag.outputs.tag }}
+          tag_prefix: ""
 
   push_image:
     name: Push Image to container registry
