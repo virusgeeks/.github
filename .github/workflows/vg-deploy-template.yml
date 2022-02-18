@@ -10,6 +10,15 @@ on:
         description: "The release tag"
         required: true
         type: string
+    secrets:
+      VG_NODE_TOKEN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_DEPLOY_ARN:
+        required: true
 
 jobs:
   deploy_to_envs:
