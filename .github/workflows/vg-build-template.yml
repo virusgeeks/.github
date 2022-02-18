@@ -1,7 +1,7 @@
 on:
   workflow_call:
     inputs:
-      MAIN_BRANCH_NAME:
+      main_branch_name:
         default: "main"
         required: false
         type: string
@@ -91,7 +91,7 @@ jobs:
   create_release_tag:
     name: Create release tag
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/${{ inputs.MAIN_BRANCH_NAME }}' || github.ref == 'refs/heads/pre-release'
+    if: github.ref == 'refs/heads/${{ inputs.main_branch_name }}' || github.ref == 'refs/heads/pre-release'
     needs: [build_and_test]
     outputs:
       tag_name: ${{ steps.version-tag.outputs.tag }}
