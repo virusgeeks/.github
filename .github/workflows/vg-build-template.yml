@@ -2,8 +2,8 @@ on:
   workflow_call:
     inputs:
       MAIN_BRANCH_NAME:
-        default: main
-        required: true
+        default: "main"
+        required: false
         type: string
     secrets:
       VG_NODE_TOKEN:
