@@ -5,6 +5,10 @@ on:
         default: "main"
         required: false
         type: string
+      is_pr_merged:
+        default: false
+        required: false
+        type: boolean
     secrets:
       VG_NODE_TOKEN:
         required: true
@@ -91,7 +95,7 @@ jobs:
   create_release_tag:
     name: Create release tag
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/${{ inputs.main_branch_name }}' || github.ref == 'refs/heads/pre-release'
+    if: ${{ inputs.is_pr_merged }}
     needs: [build_and_test]
     outputs:
       tag_name: ${{ steps.version-tag.outputs.tag }}
