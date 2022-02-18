@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - $default-branch
-      - "pre-release"
+      - "pre-release*"
 
 name: VG Build Template 2.0
 jobs:
