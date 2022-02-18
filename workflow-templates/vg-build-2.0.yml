@@ -11,9 +11,49 @@ jobs:
   vg-build-workflow:
     uses: virusgeeks/.github/.github/workflows/vg-build-template.yml@master
     with:
-      main_branch_name: "$default-branch"
+      is_pr_merged: ${{ github.ref == 'refs/heads/main' || contains(github.ref, 'refs/heads/pre-release') }}
     secrets:
       VG_NODE_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       DEPLOYMENT_GITHUB_TOKEN: ${{ secrets.DEPLOYMENT_GITHUB_TOKEN }}
+
+  # This should be replaced by a startegy, but it's not supported for reusable workflows
+  # So it is copied 3 times, one for each enviroment
+  vg-deploy-test:
+    uses: virusgeeks/.github/.github/workflows/vg-deploy-template.yml@master
+    needs: [vg-build-workflow]
+    if: ${{ github.ref == 'refs/heads/main' || contains(github.ref, 'refs/heads/pre-release') }}
+    with:
+      release_tag: ${{ needs.vg-build-workflow.outputs.RELEASE_TAG }}
+      environment: test
+    secrets:
+      VG_NODE_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEPLOY_ARN: ${{ secrets.AWS_DEPLOY_ARN }}
+
+  vg-deploy-staging:
+    uses: virusgeeks/.github/.github/workflows/vg-deploy-template.yml@master
+    needs: [vg-build-workflow]
+    if: ${{ github.ref == 'refs/heads/main' || contains(github.ref, 'refs/heads/pre-release') }}
+    with:
+      release_tag: ${{ needs.vg-build-workflow.outputs.RELEASE_TAG }}
+      environment: staging
+    secrets:
+      VG_NODE_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEPLOY_ARN: ${{ secrets.AWS_DEPLOY_ARN }}
+
+  vg-deploy-production:
+    uses: virusgeeks/.github/.github/workflows/vg-deploy-template.yml@master
+    needs: [vg-build-workflow, vg-deploy-staging]
+    with:
+      release_tag: ${{ needs.vg-build-workflow.outputs.RELEASE_TAG }}
+      environment: "production"
+    secrets:
+      VG_NODE_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEPLOY_ARN: ${{ secrets.AWS_DEPLOY_ARN }}
