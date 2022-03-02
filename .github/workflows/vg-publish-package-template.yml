@@ -35,14 +35,14 @@ jobs:
       - name: Lint
         run: yarn lint
 
-      - run: npm i
+      #- run: npm i
       - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
-      - run: npm pack
+      - run: yarn pack --filename pkg.tgz
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
             name: package
-            path: "*.tgz"
+            path: "pkg.tgz"
           
 
   
