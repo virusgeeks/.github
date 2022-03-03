@@ -1,8 +1,9 @@
 name: publish package to npm registry
-on: workflow_call
-  secrets:
-    GITHUB_TOKEN:  #created by default in workflow
-      required: true
+on: 
+  workflow_call:
+    secrets:
+      GITHUB_TOKEN:  #created by default in workflow
+        required: true
 
 name: Build and Publish Workflow
 jobs:
