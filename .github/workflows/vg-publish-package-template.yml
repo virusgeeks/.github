@@ -2,8 +2,8 @@ name: publish package to npm registry
 on: workflow_call
   secrets:
     GITHUB_TOKEN:  #created by default in workflow
-      required: true 
-#test
+      required: true
+
 name: Build and Publish Workflow
 jobs:
   build_and_test:
@@ -37,13 +37,18 @@ jobs:
 
       #- run: npm i
       - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
-      - run: yarn pack --filename pkg.tgz
+      # - run: yarn pack --filename testpkg.tgz
+      - run: yarn build
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
             name: package
-            path: "pkg.tgz"
-          
+            path: build/*
+      - name: Uploadpackage
+        uses: actions/upload-artifact@v2
+        with:
+            name: packagejson
+            path: "package.json"
 
   
   publish:
@@ -56,6 +61,10 @@ jobs:
       uses: actions/download-artifact@v2
       with:
           name: package
+    - name: Download-artifacts-package
+      uses: actions/download-artifact@v2
+      with:
+          name: packagejson
     - uses: actions/setup-node@v1
       with:
         node-version: 14.x
