@@ -2,7 +2,7 @@ name: publish package to npm registry
 on: 
   workflow_call:
     secrets:
-      GT:  #created by default in workflow
+      VG_NODE_TOKEN:  #created by default in workflow
         required: true
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
         run: yarn lint
 
       #- run: npm i
-      - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
+      
       # - run: yarn pack --filename testpkg.tgz
       - run: yarn build
       - name: Upload
@@ -44,7 +44,7 @@ jobs:
         with:
             name: package
             path: build/*
-      - name: Uploadpackage
+      - name: Upload package
         uses: actions/upload-artifact@v2
         with:
             name: packagejson
@@ -57,11 +57,11 @@ jobs:
     runs-on: ubuntu-18.04
     
     steps:
-    - name: Download-artifacts
+    - name: Download artifacts
       uses: actions/download-artifact@v2
       with:
           name: package
-    - name: Download-artifacts-package
+    - name: Download artifacts package
       uses: actions/download-artifact@v2
       with:
           name: packagejson
@@ -72,7 +72,8 @@ jobs:
         scope: "@virusgeeks"
      #create .npmrc on the fly   -- requires name in package.json to follow @virusgeeks/name
     - run: echo "registry=https://npm.pkg.github.com/@virusgeeks" >> .npmrc
+    - run: yarn version --prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
     - run: npm publish $(ls *.tgz)
       env:
-        NODE_AUTH_TOKEN: ${{secrets.GT}}
+        NODE_AUTH_TOKEN: ${{secrets.VG_NODE_TOKEN}}
             
