@@ -1,6 +1,10 @@
 name: publish package to npm registry
 on: 
   workflow_call:
+    inputs:
+      is_pr_merged:
+        type: boolean
+        required: true
     secrets:
       VG_NODE_TOKEN:  #created by default in workflow
         required: true
@@ -52,6 +56,7 @@ jobs:
 
   
   publish:
+    if: ${{github.events.input.is_pr_merged}}=='True'
     name: "Publish to GitHub Packages"
     needs: [build_and_test]
     runs-on: ubuntu-18.04
