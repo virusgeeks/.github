@@ -56,7 +56,7 @@ jobs:
 
   
   publish:
-    if: ${{github.events.input.is_pr_merged}}=='True'
+    if: ${{github.events.input.is_pr_merged}}==true
     name: "Publish to GitHub Packages"
     needs: [build_and_test]
     runs-on: ubuntu-18.04
