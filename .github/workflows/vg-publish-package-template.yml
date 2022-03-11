@@ -1,4 +1,4 @@
-name: publish package to npm registry
+name: Publish package to npm registry
 on: 
   workflow_call:
     inputs:
