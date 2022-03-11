@@ -1,0 +1,17 @@
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - $default-branch
+      - "pre-release*"
+
+name: VG Publish Package Template
+jobs:
+  vg-build-test-and-publish-workflow:
+    uses: virusgeeks/.github/.github/workflows/vg-publish-package-template.yml@master
+    with:
+      is_pr_merged: ${{ github.ref == 'refs/heads/$default-branch' || contains(github.ref, 'refs/heads/pre-release') }}
+    secrets:
+      VG_NODE_TOKEN: ${{ secrets.VG_NODE_TOKEN }}
+      

@@ -1,0 +1,9 @@
+{
+    "name": "VG Publish Package",
+    "description": "Virus Geeks CI Publishing Package template.",
+    "iconName": "logo",
+    "categories": [
+        "JavaScript",
+        "TypeScript"
+    ]
+}
