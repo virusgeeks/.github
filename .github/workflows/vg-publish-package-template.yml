@@ -53,6 +53,11 @@ jobs:
         with:
           name: packagejson
           path: "package.json"
+      - name: Upload node_modules
+        uses: actions/upload-artifact@v2
+        with:
+          name: nodeModules
+          path: node_modules/*
 
   publish:
     if: ${{github.events.input.is_pr_merged}}==true
@@ -61,24 +66,6 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo '::set-output name=dir::$(yarn cache dir)'
-
-      - uses: actions/cache@v2
-        name: validate cache
-        id: yarn-cache
-        with:
-          path: |
-            ${{ steps.yarn-cache-dir-path.outputs.dir }}
-            node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
@@ -88,6 +75,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: packagejson
+
+      - name: Download artifacts package
+        uses: actions/download-artifact@v2
+        with:
+          name: nodeModules
+
       - uses: actions/setup-node@v1
         with:
           node-version: 14.x
