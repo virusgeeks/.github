@@ -48,11 +48,6 @@ jobs:
         with:
           name: package
           path: build/*
-      - name: Upload package
-        uses: actions/upload-artifact@v2
-        with:
-          name: packagejson
-          path: "package.json"
 
   publish:
     if: ${{github.events.input.is_pr_merged}}==true
