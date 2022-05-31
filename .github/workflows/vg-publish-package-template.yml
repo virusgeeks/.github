@@ -76,7 +76,7 @@ jobs:
         with:
           name: packagejson
 
-      - name: Download artifacts package
+      - name: Download node_module artifacts package
         uses: actions/download-artifact@v2
         with:
           name: nodeModules
