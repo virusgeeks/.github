@@ -1,0 +1,6 @@
+{
+  "name": "VG Deploy Template 2.0",
+  "description": "VirusGeeks CI deploy workflow template.",
+  "iconName": "logo",
+  "categories": ["JavaScript", "TypeScript"]
+}
